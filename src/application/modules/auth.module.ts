@@ -4,6 +4,8 @@ import { RegisterUserUseCase } from '../../application/use-cases/register-user.u
 import { UserService } from '../services/user.service';
 import { UserRepository } from '../../infrastructure/repositories/user.repository';
 import { DatabaseModule } from '../../infrastructure/database/database.module';
+import { LoginUseCase } from '../../application/use-cases/login.use-case';
+import { AuthService } from '../services/auth.service';
 
 
 @Module({
@@ -11,7 +13,13 @@ import { DatabaseModule } from '../../infrastructure/database/database.module';
   controllers: [AuthController],
   providers: [
     RegisterUserUseCase,
+    LoginUseCase,
+    AuthService,
     UserService,
+    {
+      provide: 'AuthService',
+      useClass: AuthService,
+    },
     UserRepository,
     {
       provide: 'UserRepositoryInterface',
@@ -22,6 +30,6 @@ import { DatabaseModule } from '../../infrastructure/database/database.module';
       useClass: UserService,
     },
   ],
-  exports: [RegisterUserUseCase, UserService, UserRepository],
+  exports: [RegisterUserUseCase, LoginUseCase, UserService, UserRepository],
 })
 export class AuthModule {}
