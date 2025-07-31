@@ -9,6 +9,7 @@ import { AuthModule } from './application/modules/auth.module';
 import { AttendanceModule } from './application/modules/attendance.module';
 import { ProductModule } from './application/modules/product.module';
 import { StockModule } from './application/modules/stock.module';
+import { OrderModule } from './application/modules/order.module';
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -21,6 +22,7 @@ import { StockModule } from './application/modules/stock.module';
     AttendanceModule,
     ProductModule,
     StockModule,
+    OrderModule,
   ],
   controllers: [AppController],
   providers: [AppService],
