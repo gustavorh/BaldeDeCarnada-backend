@@ -10,6 +10,7 @@ import {
 import { ApiTags, ApiOperation, ApiResponse, ApiBody } from '@nestjs/swagger';
 import { GetAllUsersUseCase } from '../../application/use-cases/get-all-users.use-case';
 import { RegisterUserUseCase } from 'src/application/use-cases/register-user.use-case';
+import { User } from '../../domain/entities/user.entity';
 import { UserResponseDto, RegisterUserDto } from '../dtos/auth.dto';
 import { ApiResponseDto, ErrorResponseDto } from '../dtos/common.dto';
 
@@ -84,7 +85,20 @@ export class UsersController {
           HttpStatus.BAD_REQUEST,
         );
       }
-      const createdUser = await this.registerUserUseCase.execute(user);
+      
+      // Create a User entity with default values
+      const userEntity = User.create({
+        id: 0, // Will be set by database
+        email: user.email,
+        name: user.name,
+        password: user.password,
+        roleId: 1, // Default to user role (1)
+        isActive: true,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      });
+      
+      const createdUser = await this.registerUserUseCase.execute(userEntity);
       return {
         success: true,
         data: createdUser.toJSON(),
