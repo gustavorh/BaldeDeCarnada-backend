@@ -41,6 +41,7 @@ import { DecreaseStockUseCase } from '../use-cases/decrease-stock.use-case';
   exports: [
     StockService,
     StockRepository,
+    'StockRepositoryInterface',
     GetStockByProductIdUseCase,
     GetAllStockUseCase,
     GetLowStockItemsUseCase,

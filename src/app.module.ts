@@ -10,6 +10,7 @@ import { AttendanceModule } from './application/modules/attendance.module';
 import { ProductModule } from './application/modules/product.module';
 import { StockModule } from './application/modules/stock.module';
 import { OrderModule } from './application/modules/order.module';
+import { ReportsModule } from './application/modules/reports.module';
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -23,6 +24,7 @@ import { OrderModule } from './application/modules/order.module';
     ProductModule,
     StockModule,
     OrderModule,
+    ReportsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

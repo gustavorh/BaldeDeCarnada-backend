@@ -22,6 +22,6 @@ import { DatabaseModule } from 'src/infrastructure/database/database.module';
       useClass: AttendanceService,
     },
   ],
-  exports: [RegisterAttendanceUseCase, AttendanceService, AttendanceRepository],
+  exports: [RegisterAttendanceUseCase, AttendanceService, AttendanceRepository, 'AttendanceRepositoryInterface'],
 })
 export class AttendanceModule {}
