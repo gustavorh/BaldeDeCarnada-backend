@@ -33,6 +33,7 @@ import { GetOrderByIdUseCase } from '../use-cases/get-order-by-id.use-case';
   exports: [
     OrderService,
     OrderRepository,
+    'OrderRepositoryInterface',
     GetAllOrdersUseCase,
     GetOrderByIdUseCase,
   ],

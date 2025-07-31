@@ -51,6 +51,7 @@ import { DeleteProductUseCase } from '../use-cases/delete-product.use-case';
   exports: [
     ProductService,
     ProductRepository,
+    'ProductRepositoryInterface',
     GetAllProductsUseCase,
     GetProductByIdUseCase,
     GetProductsByCategoryUseCase,
