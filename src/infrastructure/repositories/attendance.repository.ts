@@ -139,19 +139,17 @@ export class AttendanceRepository implements AttendanceRepositoryInterface {
         checkInTime: attendanceData.checkInTime,
         checkOutTime: attendanceData.checkOutTime,
         date: attendanceData.date,
-      })
-      .returning();
+      });
 
-    const created = result[0];
-    return Attendance.create({
-      id: created.id,
-      employeeId: created.employeeId,
-      checkInTime: created.checkInTime,
-      checkOutTime: created.checkOutTime,
-      date: created.date,
-      createdAt: created.createdAt ?? new Date(),
-      updatedAt: created.updatedAt ?? new Date(),
-    });
+    // Get the inserted record by finding the last inserted ID
+    const insertId = result[0].insertId;
+    const created = await this.findById(insertId);
+    
+    if (!created) {
+      throw new Error('Failed to create attendance record');
+    }
+
+    return created;
   }
 
   async update(id: number, attendanceData: Partial<Attendance>): Promise<Attendance | null> {
@@ -167,57 +165,30 @@ export class AttendanceRepository implements AttendanceRepositoryInterface {
       updateData.date = attendanceData.date;
     }
 
-    const result = await this.db
+    await this.db
       .update(attendance)
       .set(updateData)
-      .where(eq(attendance.id, id))
-      .returning();
+      .where(eq(attendance.id, id));
 
-    if (result.length === 0) {
-      return null;
-    }
-
-    const updated = result[0];
-    return Attendance.create({
-      id: updated.id,
-      employeeId: updated.employeeId,
-      checkInTime: updated.checkInTime,
-      checkOutTime: updated.checkOutTime,
-      date: updated.date,
-      createdAt: updated.createdAt ?? new Date(),
-      updatedAt: updated.updatedAt ?? new Date(),
-    });
+    // Return the updated record
+    return await this.findById(id);
   }
 
   async delete(id: number): Promise<boolean> {
     const result = await this.db
       .delete(attendance)
-      .where(eq(attendance.id, id))
-      .returning();
+      .where(eq(attendance.id, id));
 
-    return result.length > 0;
+    return result.affectedRows > 0;
   }
 
   async checkOut(id: number, checkOutTime: Date): Promise<Attendance | null> {
-    const result = await this.db
+    await this.db
       .update(attendance)
       .set({ checkOutTime })
-      .where(eq(attendance.id, id))
-      .returning();
+      .where(eq(attendance.id, id));
 
-    if (result.length === 0) {
-      return null;
-    }
-
-    const updated = result[0];
-    return Attendance.create({
-      id: updated.id,
-      employeeId: updated.employeeId,
-      checkInTime: updated.checkInTime,
-      checkOutTime: updated.checkOutTime,
-      date: updated.date,
-      createdAt: updated.createdAt ?? new Date(),
-      updatedAt: updated.updatedAt ?? new Date(),
-    });
+    // Return the updated record
+    return await this.findById(id);
   }
 }
