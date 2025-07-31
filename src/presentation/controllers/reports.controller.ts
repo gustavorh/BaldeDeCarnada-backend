@@ -1,11 +1,14 @@
 import { Controller, Get, Query, ParseDatePipe, ParseIntPipe, BadRequestException } from '@nestjs/common';
+import { ApiTags, ApiOperation, ApiResponse, ApiQuery } from '@nestjs/swagger';
 import { GenerateSalesReportUseCase } from '../../application/use-cases/generate-sales-report.use-case';
 import { GenerateAttendanceReportUseCase } from '../../application/use-cases/generate-attendance-report.use-case';
 import { GenerateStockReportUseCase } from '../../application/use-cases/generate-stock-report.use-case';
 import { SalesReportDto } from '../../domain/dtos/sales-report.dto';
 import { AttendanceReportDto } from '../../domain/dtos/attendance-report.dto';
 import { StockReportDto } from '../../domain/dtos/stock-report.dto';
+import { ErrorResponseDto } from '../dtos/common.dto';
 
+@ApiTags('reports')
 @Controller('api/reports')
 export class ReportsController {
   constructor(
@@ -36,6 +39,19 @@ export class ReportsController {
   }
 
   @Get('sales')
+  @ApiOperation({ summary: 'Generate sales report for a date range' })
+  @ApiQuery({ name: 'startDate', description: 'Start date (YYYY-MM-DD)', example: '2023-01-01' })
+  @ApiQuery({ name: 'endDate', description: 'End date (YYYY-MM-DD)', example: '2023-12-31' })
+  @ApiResponse({ 
+    status: 200, 
+    description: 'Sales report generated successfully',
+    type: SalesReportDto
+  })
+  @ApiResponse({ 
+    status: 400, 
+    description: 'Invalid date format or missing parameters',
+    type: ErrorResponseDto
+  })
   async getSalesReport(
     @Query('startDate') startDate: string,
     @Query('endDate') endDate: string,

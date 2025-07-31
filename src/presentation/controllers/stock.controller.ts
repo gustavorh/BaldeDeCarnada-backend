@@ -10,13 +10,17 @@ import {
   Patch,
   Query,
 } from '@nestjs/common';
+import { ApiTags, ApiOperation, ApiResponse, ApiParam, ApiQuery, ApiBody } from '@nestjs/swagger';
 import { GetStockByProductIdUseCase } from '../../application/use-cases/get-stock-by-product-id.use-case';
 import { GetAllStockUseCase } from '../../application/use-cases/get-all-stock.use-case';
 import { GetLowStockItemsUseCase } from '../../application/use-cases/get-low-stock-items.use-case';
 import { UpdateStockQuantityUseCase } from '../../application/use-cases/update-stock-quantity.use-case';
 import { IncreaseStockUseCase } from '../../application/use-cases/increase-stock.use-case';
 import { DecreaseStockUseCase } from '../../application/use-cases/decrease-stock.use-case';
+import { StockResponseDto, UpdateStockQuantityDto } from '../dtos/stock.dto';
+import { ApiResponseDto, ErrorResponseDto } from '../dtos/common.dto';
 
+@ApiTags('stock')
 @Controller('api/stock')
 export class StockController {
   constructor(
@@ -35,6 +39,17 @@ export class StockController {
   ) {}
 
   @Get()
+  @ApiOperation({ summary: 'Get all stock items' })
+  @ApiResponse({ 
+    status: 200, 
+    description: 'Stock items retrieved successfully',
+    type: ApiResponseDto<StockResponseDto[]>
+  })
+  @ApiResponse({ 
+    status: 500, 
+    description: 'Failed to retrieve stock items',
+    type: ErrorResponseDto
+  })
   async getAllStock() {
     try {
       const stockItems = await this.getAllStockUseCase.execute();

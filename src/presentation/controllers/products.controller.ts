@@ -13,18 +13,22 @@ import {
   Put,
   Query,
 } from '@nestjs/common';
+import { ApiTags, ApiOperation, ApiResponse, ApiParam, ApiQuery, ApiBody } from '@nestjs/swagger';
 import { GetAllProductsUseCase } from '../../application/use-cases/get-all-products.use-case';
 import { GetProductByIdUseCase } from '../../application/use-cases/get-product-by-id.use-case';
 import { GetProductsByCategoryUseCase } from '../../application/use-cases/get-products-by-category.use-case';
 import { SearchProductsByNameUseCase } from '../../application/use-cases/search-products-by-name.use-case';
 import { GetActiveProductsUseCase } from '../../application/use-cases/get-active-products.use-case';
 import { GetAvailableProductsUseCase } from '../../application/use-cases/get-available-products.use-case';
-import { CreateProductUseCase, CreateProductDto } from '../../application/use-cases/create-product.use-case';
-import { UpdateProductUseCase, UpdateProductDto } from '../../application/use-cases/update-product.use-case';
+import { CreateProductUseCase, CreateProductDto as CreateProductUseCaseDto } from '../../application/use-cases/create-product.use-case';
+import { UpdateProductUseCase, UpdateProductDto as UpdateProductUseCaseDto } from '../../application/use-cases/update-product.use-case';
 import { UpdateProductStockUseCase } from '../../application/use-cases/update-product-stock.use-case';
 import { DeactivateProductUseCase } from '../../application/use-cases/deactivate-product.use-case';
 import { DeleteProductUseCase } from '../../application/use-cases/delete-product.use-case';
+import { ProductResponseDto, UpdateProductStockDto, CreateProductDto, UpdateProductDto } from '../dtos/product.dto';
+import { ApiResponseDto, ErrorResponseDto } from '../dtos/common.dto';
 
+@ApiTags('products')
 @Controller('api/products')
 export class ProductsController {
   constructor(
@@ -53,6 +57,17 @@ export class ProductsController {
   ) {}
 
   @Get()
+  @ApiOperation({ summary: 'Get all products' })
+  @ApiResponse({ 
+    status: 200, 
+    description: 'Products retrieved successfully',
+    type: ApiResponseDto<ProductResponseDto[]>
+  })
+  @ApiResponse({ 
+    status: 500, 
+    description: 'Failed to retrieve products',
+    type: ErrorResponseDto
+  })
   async getAllProducts() {
     try {
       const products = await this.getAllProductsUseCase.execute();
@@ -74,6 +89,17 @@ export class ProductsController {
   }
 
   @Get('active')
+  @ApiOperation({ summary: 'Get all active products' })
+  @ApiResponse({ 
+    status: 200, 
+    description: 'Active products retrieved successfully',
+    type: ApiResponseDto<ProductResponseDto[]>
+  })
+  @ApiResponse({ 
+    status: 500, 
+    description: 'Failed to retrieve active products',
+    type: ErrorResponseDto
+  })
   async getActiveProducts() {
     try {
       const products = await this.getActiveProductsUseCase.execute();
@@ -95,6 +121,17 @@ export class ProductsController {
   }
 
   @Get('available')
+  @ApiOperation({ summary: 'Get all available products (with stock > 0)' })
+  @ApiResponse({ 
+    status: 200, 
+    description: 'Available products retrieved successfully',
+    type: ApiResponseDto<ProductResponseDto[]>
+  })
+  @ApiResponse({ 
+    status: 500, 
+    description: 'Failed to retrieve available products',
+    type: ErrorResponseDto
+  })
   async getAvailableProducts() {
     try {
       const products = await this.getAvailableProductsUseCase.execute();
@@ -116,6 +153,23 @@ export class ProductsController {
   }
 
   @Get('category/:category')
+  @ApiOperation({ summary: 'Get products by category' })
+  @ApiParam({ name: 'category', description: 'Product category', example: 'fishing-gear' })
+  @ApiResponse({ 
+    status: 200, 
+    description: 'Products in category retrieved successfully',
+    type: ApiResponseDto<ProductResponseDto[]>
+  })
+  @ApiResponse({ 
+    status: 400, 
+    description: 'Invalid category',
+    type: ErrorResponseDto
+  })
+  @ApiResponse({ 
+    status: 500, 
+    description: 'Failed to retrieve products by category',
+    type: ErrorResponseDto
+  })
   async getProductsByCategory(@Param('category') category: string) {
     try {
       const products = await this.getProductsByCategoryUseCase.execute(category);
@@ -137,6 +191,23 @@ export class ProductsController {
   }
 
   @Get('search')
+  @ApiOperation({ summary: 'Search products by name' })
+  @ApiQuery({ name: 'name', description: 'Product name to search for', example: 'fishing rod' })
+  @ApiResponse({ 
+    status: 200, 
+    description: 'Products matching search criteria retrieved successfully',
+    type: ApiResponseDto<ProductResponseDto[]>
+  })
+  @ApiResponse({ 
+    status: 400, 
+    description: 'Search name parameter is required',
+    type: ErrorResponseDto
+  })
+  @ApiResponse({ 
+    status: 500, 
+    description: 'Failed to search products',
+    type: ErrorResponseDto
+  })
   async searchProductsByName(@Query('name') name: string) {
     try {
       if (!name) {
@@ -170,6 +241,23 @@ export class ProductsController {
   }
 
   @Get(':id')
+  @ApiOperation({ summary: 'Get product by ID' })
+  @ApiParam({ name: 'id', description: 'Product ID', example: 1 })
+  @ApiResponse({ 
+    status: 200, 
+    description: 'Product retrieved successfully',
+    type: ApiResponseDto<ProductResponseDto>
+  })
+  @ApiResponse({ 
+    status: 404, 
+    description: 'Product not found',
+    type: ErrorResponseDto
+  })
+  @ApiResponse({ 
+    status: 500, 
+    description: 'Failed to retrieve product',
+    type: ErrorResponseDto
+  })
   async getProductById(@Param('id', ParseIntPipe) id: number) {
     try {
       const product = await this.getProductByIdUseCase.execute(id);
@@ -206,7 +294,24 @@ export class ProductsController {
   }
 
   @Post()
-  async createProduct(@Body() productData: CreateProductDto) {
+  @ApiOperation({ summary: 'Create a new product' })
+  @ApiBody({ type: CreateProductDto })
+  @ApiResponse({ 
+    status: 201, 
+    description: 'Product created successfully',
+    type: ApiResponseDto<ProductResponseDto>
+  })
+  @ApiResponse({ 
+    status: 400, 
+    description: 'Invalid product data',
+    type: ErrorResponseDto
+  })
+  @ApiResponse({ 
+    status: 500, 
+    description: 'Failed to create product',
+    type: ErrorResponseDto
+  })
+  async createProduct(@Body() productData: CreateProductUseCaseDto) {
     try {
       if (!productData || !productData.name || !productData.category || productData.price === undefined) {
         throw new HttpException(
@@ -246,9 +351,27 @@ export class ProductsController {
   }
 
   @Put(':id')
+  @ApiOperation({ summary: 'Update a product' })
+  @ApiParam({ name: 'id', description: 'Product ID', example: 1 })
+  @ApiBody({ type: UpdateProductDto })
+  @ApiResponse({ 
+    status: 200, 
+    description: 'Product updated successfully',
+    type: ApiResponseDto<ProductResponseDto>
+  })
+  @ApiResponse({ 
+    status: 404, 
+    description: 'Product not found',
+    type: ErrorResponseDto
+  })
+  @ApiResponse({ 
+    status: 500, 
+    description: 'Failed to update product',
+    type: ErrorResponseDto
+  })
   async updateProduct(
     @Param('id', ParseIntPipe) id: number,
-    @Body() productData: UpdateProductDto,
+    @Body() productData: UpdateProductUseCaseDto,
   ) {
     try {
       const product = await this.updateProductUseCase.execute(id, productData);
@@ -292,6 +415,29 @@ export class ProductsController {
   }
 
   @Patch(':id/stock')
+  @ApiOperation({ summary: 'Update product stock quantity' })
+  @ApiParam({ name: 'id', description: 'Product ID', example: 1 })
+  @ApiBody({ type: UpdateProductStockDto })
+  @ApiResponse({ 
+    status: 200, 
+    description: 'Product stock updated successfully',
+    type: ApiResponseDto<ProductResponseDto>
+  })
+  @ApiResponse({ 
+    status: 400, 
+    description: 'Invalid stock data',
+    type: ErrorResponseDto
+  })
+  @ApiResponse({ 
+    status: 404, 
+    description: 'Product not found',
+    type: ErrorResponseDto
+  })
+  @ApiResponse({ 
+    status: 500, 
+    description: 'Failed to update product stock',
+    type: ErrorResponseDto
+  })
   async updateProductStock(
     @Param('id', ParseIntPipe) id: number,
     @Body() stockData: { stock: number },
@@ -344,6 +490,23 @@ export class ProductsController {
   }
 
   @Patch(':id/deactivate')
+  @ApiOperation({ summary: 'Deactivate a product' })
+  @ApiParam({ name: 'id', description: 'Product ID', example: 1 })
+  @ApiResponse({ 
+    status: 200, 
+    description: 'Product deactivated successfully',
+    type: ApiResponseDto<null>
+  })
+  @ApiResponse({ 
+    status: 404, 
+    description: 'Product not found',
+    type: ErrorResponseDto
+  })
+  @ApiResponse({ 
+    status: 500, 
+    description: 'Failed to deactivate product',
+    type: ErrorResponseDto
+  })
   async deactivateProduct(@Param('id', ParseIntPipe) id: number) {
     try {
       const success = await this.deactivateProductUseCase.execute(id);
@@ -381,6 +544,23 @@ export class ProductsController {
   }
 
   @Delete(':id')
+  @ApiOperation({ summary: 'Delete a product' })
+  @ApiParam({ name: 'id', description: 'Product ID', example: 1 })
+  @ApiResponse({ 
+    status: 200, 
+    description: 'Product deleted successfully',
+    type: ApiResponseDto<null>
+  })
+  @ApiResponse({ 
+    status: 404, 
+    description: 'Product not found',
+    type: ErrorResponseDto
+  })
+  @ApiResponse({ 
+    status: 500, 
+    description: 'Failed to delete product',
+    type: ErrorResponseDto
+  })
   async deleteProduct(@Param('id', ParseIntPipe) id: number) {
     try {
       const success = await this.deleteProductUseCase.execute(id);

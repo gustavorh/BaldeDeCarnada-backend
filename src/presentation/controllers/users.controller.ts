@@ -7,9 +7,13 @@ import {
   Inject,
   Post,
 } from '@nestjs/common';
+import { ApiTags, ApiOperation, ApiResponse, ApiBody } from '@nestjs/swagger';
 import { GetAllUsersUseCase } from '../../application/use-cases/get-all-users.use-case';
 import { RegisterUserUseCase } from 'src/application/use-cases/register-user.use-case';
+import { UserResponseDto, RegisterUserDto } from '../dtos/auth.dto';
+import { ApiResponseDto, ErrorResponseDto } from '../dtos/common.dto';
 
+@ApiTags('users')
 @Controller('api/users')
 export class UsersController {
   constructor(
@@ -20,6 +24,17 @@ export class UsersController {
   ) {}
 
   @Get()
+  @ApiOperation({ summary: 'Get all users' })
+  @ApiResponse({ 
+    status: 200, 
+    description: 'Users retrieved successfully',
+    type: ApiResponseDto<UserResponseDto[]>
+  })
+  @ApiResponse({ 
+    status: 500, 
+    description: 'Failed to retrieve users',
+    type: ErrorResponseDto
+  })
   async getAllUsers() {
     try {
       const users = await this.getAllUsersUseCase.execute();
@@ -41,6 +56,23 @@ export class UsersController {
   }
 
   @Post()
+  @ApiOperation({ summary: 'Create a new user' })
+  @ApiBody({ type: RegisterUserDto })
+  @ApiResponse({ 
+    status: 201, 
+    description: 'User created successfully',
+    type: ApiResponseDto<UserResponseDto>
+  })
+  @ApiResponse({ 
+    status: 400, 
+    description: 'Invalid user data',
+    type: ErrorResponseDto
+  })
+  @ApiResponse({ 
+    status: 500, 
+    description: 'Failed to create user',
+    type: ErrorResponseDto
+  })
   async createUser(@Body() user: any) {
     try {
       if (!user || !user.email || !user.name || !user.password) {

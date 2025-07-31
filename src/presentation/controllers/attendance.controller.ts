@@ -11,18 +11,13 @@ import {
   HttpStatus,
   Inject,
 } from '@nestjs/common';
+import { ApiTags, ApiOperation, ApiResponse, ApiParam, ApiQuery, ApiBody } from '@nestjs/swagger';
 import { RegisterAttendanceUseCase } from '../../application/use-cases/register-attendance.use-case';
 import { AttendanceService } from '../../application/services/attendance.service';
+import { CheckInDto, CheckOutDto, AttendanceResponseDto } from '../dtos/attendance.dto';
+import { ApiResponseDto, ErrorResponseDto } from '../dtos/common.dto';
 
-export interface CheckInDto {
-  employeeId: number;
-  checkInTime?: string; // ISO string format
-}
-
-export interface CheckOutDto {
-  checkOutTime?: string; // ISO string format
-}
-
+@ApiTags('attendance')
 @Controller('api/attendance')
 export class AttendanceController {
   constructor(
@@ -33,6 +28,29 @@ export class AttendanceController {
   ) {}
 
   @Get()
+  @ApiOperation({ summary: 'Get attendance records with optional filters' })
+  @ApiQuery({ 
+    name: 'employeeId', 
+    description: 'Filter by employee ID', 
+    required: false,
+    example: '1'
+  })
+  @ApiQuery({ 
+    name: 'date', 
+    description: 'Filter by date (YYYY-MM-DD)', 
+    required: false,
+    example: '2023-01-01'
+  })
+  @ApiResponse({ 
+    status: 200, 
+    description: 'Attendance records retrieved successfully',
+    type: ApiResponseDto<AttendanceResponseDto[]>
+  })
+  @ApiResponse({ 
+    status: 500, 
+    description: 'Failed to retrieve attendance records',
+    type: ErrorResponseDto
+  })
   async getAllAttendance(@Query('employeeId') employeeId?: string, @Query('date') date?: string) {
     try {
       let attendance;
@@ -70,6 +88,23 @@ export class AttendanceController {
   }
 
   @Get(':id')
+  @ApiOperation({ summary: 'Get attendance record by ID' })
+  @ApiParam({ name: 'id', description: 'Attendance record ID', example: '1' })
+  @ApiResponse({ 
+    status: 200, 
+    description: 'Attendance record retrieved successfully',
+    type: ApiResponseDto<AttendanceResponseDto>
+  })
+  @ApiResponse({ 
+    status: 404, 
+    description: 'Attendance record not found',
+    type: ErrorResponseDto
+  })
+  @ApiResponse({ 
+    status: 500, 
+    description: 'Failed to retrieve attendance record',
+    type: ErrorResponseDto
+  })
   async getAttendanceById(@Param('id') id: string) {
     try {
       const attendanceId = parseInt(id);
@@ -106,6 +141,18 @@ export class AttendanceController {
   }
 
   @Post('check-in')
+  @ApiOperation({ summary: 'Register employee check-in' })
+  @ApiBody({ type: CheckInDto })
+  @ApiResponse({ 
+    status: 201, 
+    description: 'Check-in registered successfully',
+    type: ApiResponseDto<AttendanceResponseDto>
+  })
+  @ApiResponse({ 
+    status: 400, 
+    description: 'Employee ID is required or invalid data',
+    type: ErrorResponseDto
+  })
   async checkIn(@Body() checkInDto: CheckInDto) {
     try {
       if (!checkInDto || !checkInDto.employeeId) {
@@ -143,6 +190,24 @@ export class AttendanceController {
   }
 
   @Put(':id/check-out')
+  @ApiOperation({ summary: 'Register employee check-out' })
+  @ApiParam({ name: 'id', description: 'Attendance record ID', example: '1' })
+  @ApiBody({ type: CheckOutDto })
+  @ApiResponse({ 
+    status: 200, 
+    description: 'Check-out registered successfully',
+    type: ApiResponseDto<AttendanceResponseDto>
+  })
+  @ApiResponse({ 
+    status: 400, 
+    description: 'Invalid data',
+    type: ErrorResponseDto
+  })
+  @ApiResponse({ 
+    status: 404, 
+    description: 'Attendance record not found',
+    type: ErrorResponseDto
+  })
   async checkOut(@Param('id') id: string, @Body() checkOutDto: CheckOutDto) {
     try {
       const attendanceId = parseInt(id);
@@ -181,6 +246,18 @@ export class AttendanceController {
   }
 
   @Get('employee/:employeeId/today')
+  @ApiOperation({ summary: 'Get today\'s attendance for specific employee' })
+  @ApiParam({ name: 'employeeId', description: 'Employee ID', example: '1' })
+  @ApiResponse({ 
+    status: 200, 
+    description: 'Today\'s attendance retrieved successfully',
+    type: ApiResponseDto<AttendanceResponseDto>
+  })
+  @ApiResponse({ 
+    status: 500, 
+    description: 'Failed to retrieve today\'s attendance',
+    type: ErrorResponseDto
+  })
   async getTodayAttendance(@Param('employeeId') employeeId: string) {
     try {
       const employeeIdNum = parseInt(employeeId);
@@ -204,6 +281,23 @@ export class AttendanceController {
   }
 
   @Delete(':id')
+  @ApiOperation({ summary: 'Delete attendance record' })
+  @ApiParam({ name: 'id', description: 'Attendance record ID', example: '1' })
+  @ApiResponse({ 
+    status: 200, 
+    description: 'Attendance record deleted successfully',
+    type: ApiResponseDto<null>
+  })
+  @ApiResponse({ 
+    status: 404, 
+    description: 'Attendance record not found',
+    type: ErrorResponseDto
+  })
+  @ApiResponse({ 
+    status: 500, 
+    description: 'Failed to delete attendance record',
+    type: ErrorResponseDto
+  })
   async deleteAttendance(@Param('id') id: string) {
     try {
       const attendanceId = parseInt(id);
