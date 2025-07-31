@@ -4,6 +4,7 @@ export class User {
     public readonly email: string,
     public readonly name: string,
     public readonly password: string,
+    public readonly roleId: number,
     public readonly isActive: boolean,
     public readonly createdAt: Date,
     public readonly updatedAt: Date,
@@ -14,6 +15,7 @@ export class User {
     email: string;
     name: string;
     password: string;
+    roleId: number;
     isActive: boolean;
     createdAt: Date;
     updatedAt: Date;
@@ -23,6 +25,7 @@ export class User {
       props.email,
       props.name,
       props.password,
+      props.roleId,
       props.isActive,
       props.createdAt,
       props.updatedAt,
@@ -34,6 +37,7 @@ export class User {
       id: this.id,
       email: this.email,
       name: this.name,
+      roleId: this.roleId,
       isActive: this.isActive,
       createdAt: this.createdAt,
       updatedAt: this.updatedAt,
