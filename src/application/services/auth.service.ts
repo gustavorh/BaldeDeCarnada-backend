@@ -13,8 +13,6 @@ export class AuthService {
   async login(email: string, password: string): Promise<User | null> {
     const user = await this.userRepository.findByEmail(email);
 
-    console.log('Password Input:', password);
-    console.log('Password Stored:', user?.password);
     if (user && user.password === password) {
       console.log('User authenticated successfully');
       return user;
