@@ -7,6 +7,8 @@ import { ConfigModule } from '@nestjs/config';
 import { UsersModule } from './application/modules/user.module';
 import { AuthModule } from './application/modules/auth.module';
 import { AttendanceModule } from './application/modules/attendance.module';
+import { ProductModule } from './application/modules/product.module';
+import { StockModule } from './application/modules/stock.module';
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -17,6 +19,8 @@ import { AttendanceModule } from './application/modules/attendance.module';
     AuthModule,
     UsersModule,
     AttendanceModule,
+    ProductModule,
+    StockModule,
   ],
   controllers: [AppController],
   providers: [AppService],
