@@ -5,6 +5,27 @@ import { AppModule } from './app.module';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
+  // CORS configuration
+  app.enableCors({
+    origin: [
+      'http://localhost:3002', // Next.js frontend
+      'http://localhost:3001', // Alternative port
+      'http://127.0.0.1:3002',
+      'http://127.0.0.1:3001',
+    ],
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+    allowedHeaders: [
+      'Content-Type',
+      'Authorization',
+      'X-Requested-With',
+      'Accept',
+      'Origin',
+    ],
+    credentials: true, // Allow cookies and credentials
+    preflightContinue: false,
+    optionsSuccessStatus: 204, // Some legacy browsers choke on 204
+  });
+
   // Swagger configuration
   const config = new DocumentBuilder()
     .setTitle('Balde de Carnada API')
@@ -22,6 +43,9 @@ async function bootstrap() {
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api/docs', app, document);
 
-  await app.listen(process.env.PORT ?? 3000);
+  const port = process.env.PORT ?? 3001;
+  await app.listen(port);
+  console.log(`🚀 Backend server running on http://localhost:${port}`);
+  console.log(`📚 API documentation available at http://localhost:${port}/api/docs`);
 }
 bootstrap();
