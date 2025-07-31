@@ -1,4 +1,4 @@
-import { Controller, Get, Query, ParseDatePipe, ParseIntPipe } from '@nestjs/common';
+import { Controller, Get, Query, ParseDatePipe, ParseIntPipe, BadRequestException } from '@nestjs/common';
 import { GenerateSalesReportUseCase } from '../../application/use-cases/generate-sales-report.use-case';
 import { GenerateAttendanceReportUseCase } from '../../application/use-cases/generate-attendance-report.use-case';
 import { GenerateStockReportUseCase } from '../../application/use-cases/generate-stock-report.use-case';
@@ -14,22 +14,53 @@ export class ReportsController {
     private readonly generateStockReportUseCase: GenerateStockReportUseCase,
   ) {}
 
+  private parseDate(dateString: string): Date {
+    // Handle different date formats
+    const date = new Date(dateString);
+    
+    // Check if the date is valid
+    if (isNaN(date.getTime())) {
+      // Try parsing with ISO format YYYY-MM-DD
+      const isoMatch = dateString.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+      if (isoMatch) {
+        const [, year, month, day] = isoMatch;
+        const parsedDate = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+        if (!isNaN(parsedDate.getTime())) {
+          return parsedDate;
+        }
+      }
+      throw new BadRequestException(`Invalid date format: ${dateString}. Please use YYYY-MM-DD format.`);
+    }
+    
+    return date;
+  }
+
   @Get('sales')
   async getSalesReport(
     @Query('startDate') startDate: string,
     @Query('endDate') endDate: string,
   ): Promise<SalesReportDto> {
     try {
-      const start = new Date(startDate);
-      const end = new Date(endDate);
+      // Validate that both dates are provided
+      if (!startDate || !endDate) {
+        throw new BadRequestException('Both startDate and endDate are required');
+      }
 
-      if (isNaN(start.getTime()) || isNaN(end.getTime())) {
-        throw new Error('Invalid date format. Please use YYYY-MM-DD format.');
+      // Parse dates with proper validation
+      const start = this.parseDate(startDate);
+      const end = this.parseDate(endDate);
+
+      // Validate date range
+      if (start > end) {
+        throw new BadRequestException('startDate cannot be after endDate');
       }
 
       return await this.generateSalesReportUseCase.execute(start, end);
     } catch (error) {
-      throw new Error(`Failed to generate sales report: ${error.message}`);
+      if (error instanceof BadRequestException) {
+        throw error;
+      }
+      throw new BadRequestException(`Failed to generate sales report: ${error.message}`);
     }
   }
 
@@ -39,16 +70,26 @@ export class ReportsController {
     @Query('endDate') endDate: string,
   ): Promise<AttendanceReportDto> {
     try {
-      const start = new Date(startDate);
-      const end = new Date(endDate);
+      // Validate that both dates are provided
+      if (!startDate || !endDate) {
+        throw new BadRequestException('Both startDate and endDate are required');
+      }
 
-      if (isNaN(start.getTime()) || isNaN(end.getTime())) {
-        throw new Error('Invalid date format. Please use YYYY-MM-DD format.');
+      // Parse dates with proper validation
+      const start = this.parseDate(startDate);
+      const end = this.parseDate(endDate);
+
+      // Validate date range
+      if (start > end) {
+        throw new BadRequestException('startDate cannot be after endDate');
       }
 
       return await this.generateAttendanceReportUseCase.execute(start, end);
     } catch (error) {
-      throw new Error(`Failed to generate attendance report: ${error.message}`);
+      if (error instanceof BadRequestException) {
+        throw error;
+      }
+      throw new BadRequestException(`Failed to generate attendance report: ${error.message}`);
     }
   }
 
@@ -60,12 +101,15 @@ export class ReportsController {
       const lowStockThreshold = threshold ? parseInt(threshold, 10) : 10;
 
       if (isNaN(lowStockThreshold) || lowStockThreshold < 0) {
-        throw new Error('Threshold must be a non-negative number.');
+        throw new BadRequestException('Threshold must be a non-negative number.');
       }
 
       return await this.generateStockReportUseCase.execute(lowStockThreshold);
     } catch (error) {
-      throw new Error(`Failed to generate stock report: ${error.message}`);
+      if (error instanceof BadRequestException) {
+        throw error;
+      }
+      throw new BadRequestException(`Failed to generate stock report: ${error.message}`);
     }
   }
 
@@ -77,7 +121,7 @@ export class ReportsController {
       const daysCount = parseInt(days, 10);
       
       if (isNaN(daysCount) || daysCount <= 0) {
-        throw new Error('Days must be a positive number.');
+        throw new BadRequestException('Days must be a positive number.');
       }
 
       const endDate = new Date();
@@ -86,7 +130,10 @@ export class ReportsController {
 
       return await this.generateSalesReportUseCase.execute(startDate, endDate);
     } catch (error) {
-      throw new Error(`Failed to generate sales summary: ${error.message}`);
+      if (error instanceof BadRequestException) {
+        throw error;
+      }
+      throw new BadRequestException(`Failed to generate sales summary: ${error.message}`);
     }
   }
 
@@ -98,7 +145,7 @@ export class ReportsController {
       const daysCount = parseInt(days, 10);
       
       if (isNaN(daysCount) || daysCount <= 0) {
-        throw new Error('Days must be a positive number.');
+        throw new BadRequestException('Days must be a positive number.');
       }
 
       const endDate = new Date();
@@ -107,7 +154,10 @@ export class ReportsController {
 
       return await this.generateAttendanceReportUseCase.execute(startDate, endDate);
     } catch (error) {
-      throw new Error(`Failed to generate attendance summary: ${error.message}`);
+      if (error instanceof BadRequestException) {
+        throw error;
+      }
+      throw new BadRequestException(`Failed to generate attendance summary: ${error.message}`);
     }
   }
 }
